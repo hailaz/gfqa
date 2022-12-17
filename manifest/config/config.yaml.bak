@@ -1,0 +1,12 @@
+server:
+  address: ':8000'
+  openapiPath: '/api.json'
+  swaggerPath: '/swagger'
+
+logger:
+  level: 'all'
+  stdout: true
+  path: 'log'
+  file: '{Y-m-d}.log'
+
+doctoken: ''
