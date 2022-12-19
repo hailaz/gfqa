@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"log"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
@@ -46,6 +47,12 @@ func boot(ctx context.Context) {
 	// hello
 	glog.Debug(ctx, "hello")
 
+	log.SetOutput(&MyWrite{})
+
+	glog.Debug(ctx, glog.DefaultLogger().GetWriter())
+
+	log.Println("hello")
+
 	// gf doc init
 	token, err := g.Cfg().Get(ctx, "doctoken")
 	if err != nil {
@@ -59,4 +66,18 @@ func boot(ctx context.Context) {
 
 	// wechat
 	go service.RunWechat(ctx)
+}
+
+// MyWrite description
+type MyWrite struct {
+}
+
+// Write description
+//
+// createTime: 2022-12-18 14:29:25
+//
+// author: hailaz
+func (w *MyWrite) Write(p []byte) (n int, err error) {
+	glog.Skip(1).Debug(context.Background(), string(p)[20:])
+	return len(p), nil
 }

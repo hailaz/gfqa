@@ -13,9 +13,19 @@ import (
 
 // MsgHandler description
 type MsgHandler struct {
+	bot *openwechat.Bot
 }
 
-var handler MsgHandler
+// NewHandler description
+//
+// createTime: 2022-12-19 00:09:54
+//
+// author: hailaz
+func NewHandler(bot *openwechat.Bot) *MsgHandler {
+	return &MsgHandler{
+		bot: bot,
+	}
+}
 
 // RunWechat description
 //
@@ -26,11 +36,15 @@ func RunWechat(ctx context.Context) {
 	//bot := openwechat.DefaultBot()
 	bot := openwechat.DefaultBot(openwechat.Desktop) // 桌面模式，上面登录不上的可以尝试切换这种模式
 
+	handler := NewHandler(bot)
+
 	// 注册消息处理函数
 	bot.MessageHandler = handler.Handler
 
 	// 注册登陆二维码回调
 	bot.UUIDCallback = handler.QrCodeCallBack
+
+	bot.SyncCheckCallback = handler.SyncCheckCallback
 
 	// 创建热存储容器对象
 	reloadStorage := openwechat.NewJsonFileHotReloadStorage("storage.json")
@@ -47,6 +61,36 @@ func RunWechat(ctx context.Context) {
 	bot.Block()
 }
 
+// FuncName description
+//
+// createTime: 2022-12-19 00:06:47
+//
+// author: hailaz
+func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
+	ctx := gctx.New()
+	glog.Debugf(ctx, "RetCode:%s  Selector:%s", resp.RetCode, resp.Selector)
+	if resp.Success() {
+		// self, err := h.bot.GetCurrentUser()
+		// if err != nil {
+		// 	glog.Errorf(ctx, "get current user error : %v", err)
+		// 	return
+		// }
+		// glog.Debugf(ctx, "self : %+v", *self.User)
+
+		// fs, err := self.Friends(false)
+		// if err != nil {
+		// 	glog.Errorf(ctx, "get friends error : %v", err)
+		// 	return
+		// }
+		// glog.Debugf(ctx, "friends : %+v", fs)
+		// fs.GetByNickName("哆啦A梦").SendText("你好")
+
+	} else {
+		glog.Debugf(ctx, "sync check error: %s", resp.Err())
+	}
+
+}
+
 // Handler 全局处理入口
 func (h *MsgHandler) Handler(msg *openwechat.Message) {
 	ctx := gctx.New()
@@ -54,7 +98,6 @@ func (h *MsgHandler) Handler(msg *openwechat.Message) {
 	// 处理群消息
 	if msg.IsSendByGroup() {
 		h.GroupMsg(ctx, msg)
-
 		return
 	}
 
@@ -101,12 +144,14 @@ func (h *MsgHandler) GroupMsg(ctx context.Context, msg *openwechat.Message) erro
 
 	requestText := strings.TrimSpace(msg.Content)
 	requestText = strings.Trim(requestText, "\n")
-
-	reply := Search(gctx.New(), requestText)
-	replyText := atText + reply
-	_, err = msg.ReplyText(replyText)
-	if err != nil {
-		glog.Debugf(ctx, "response group error: %v \n", err)
+	if requestText != "" {
+		reply := Search(gctx.New(), requestText)
+		replyText := atText + reply
+		_, err = msg.ReplyText(replyText)
+		if err != nil {
+			glog.Debugf(ctx, "response group error: %v \n", err)
+			return err
+		}
 	}
 	return err
 }
@@ -125,13 +170,20 @@ func (h *MsgHandler) UserMsg(ctx context.Context, msg *openwechat.Message) error
 	}
 	glog.Debugf(ctx, "Received User %v Text Msg : %v", sender.NickName, msg.Content)
 
+	if sender.NickName == "微信团队" {
+		glog.Debugf(ctx, "Received Uin %v", sender.Uin)
+		return nil
+	}
+
 	requestText := strings.TrimSpace(msg.Content)
 	requestText = strings.Trim(requestText, "\n")
-
-	reply := Search(ctx, requestText)
-	_, err = msg.ReplyText(reply)
-	if err != nil {
-		glog.Debugf(ctx, "response user error: %v \n", err)
+	if requestText != "" {
+		reply := Search(ctx, requestText)
+		_, err = msg.ReplyText(reply)
+		if err != nil {
+			glog.Debugf(ctx, "response user error: %v \n", err)
+			return err
+		}
 	}
 	return err
 }
