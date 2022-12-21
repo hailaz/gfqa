@@ -53,6 +53,13 @@ func boot(ctx context.Context) {
 
 	log.Println("hello")
 
+	// email init
+	emailcode, err := g.Cfg().Get(ctx, "emailcode")
+	if err != nil {
+		glog.Fatal(ctx, err)
+	}
+	service.SetEmailCode(emailcode.String())
+
 	// gf doc init
 	token, err := g.Cfg().Get(ctx, "doctoken")
 	if err != nil {

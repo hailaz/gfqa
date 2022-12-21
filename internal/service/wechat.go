@@ -5,9 +5,9 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/eatmoreapple/openwechat"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/glog"
+	"github.com/hailaz/openwechat"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -168,7 +168,7 @@ func (h *MsgHandler) UserMsg(ctx context.Context, msg *openwechat.Message) error
 		glog.Error(ctx, err)
 		return err
 	}
-	glog.Debugf(ctx, "Received User %v Text Msg : %v", sender.NickName, msg.Content)
+	glog.Debugf(ctx, "Received User[%v] %v Text Msg : %v", sender.Uin, sender.NickName, msg.Content)
 
 	if sender.NickName == "微信团队" {
 		glog.Debugf(ctx, "Received Uin %v", sender.Uin)
@@ -190,6 +190,7 @@ func (h *MsgHandler) UserMsg(ctx context.Context, msg *openwechat.Message) error
 
 // QrCodeCallBack 登录扫码回调，
 func (h *MsgHandler) QrCodeCallBack(uuid string) {
+	SendEMail(GetQrcodeMsg("https://login.weixin.qq.com/l/"+uuid), "微信登录二维码", []string{"hailaz@qq.com"})
 	if runtime.GOOS == "windows" {
 		// 运行在Windows系统上
 		openwechat.PrintlnQrcodeUrl(uuid)
