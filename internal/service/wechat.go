@@ -48,7 +48,7 @@ func RunWechat(ctx context.Context) {
 	bot.SyncCheckCallback = handler.SyncCheckCallback
 
 	// 创建热存储容器对象
-	reloadStorage := openwechat.NewJsonFileHotReloadStorage("storage.json")
+	reloadStorage := openwechat.NewFileHotReloadStorage("storage.json")
 
 	// 执行热登录
 	err := bot.HotLogin(reloadStorage)
@@ -81,6 +81,18 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 			}
 			glog.Debugf(ctx, "self : %+v", *self.User)
 
+			mp, err := self.Mps(false)
+			if err != nil {
+				glog.Errorf(ctx, "get friends error : %v", err)
+				return
+			}
+			for _, v := range mp {
+				glog.Debug(ctx, v.ID(), v.NickName, v.UserName)
+				// v.SendText("你好")
+			}
+
+			// mp.GetByNickName("微信支付").SendText("你好")
+
 			fs, err := self.Friends(true)
 			if err != nil {
 				glog.Errorf(ctx, "get friends error : %v", err)
@@ -92,7 +104,7 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 			// glog.Debugf(ctx, "friends : %+v", fs)
 			// fs.GetByNickName("哆啦A梦").SendText("你好")
 			now := time.Now()
-			if now.Minute()%10 == 3 && now.Second() < 30 {
+			if now.Minute()%20 == 3 && now.Second() < 30 {
 				glog.Debugf(ctx, "now : %+v", now)
 				// msg := now.Format("2006-01-02 15:04:05") + " " + grand.Letters(now.Second())
 				fs.GetByNickName("AA39萌小宝~网购查券助手").SendText(mymsg)
@@ -120,6 +132,7 @@ func (h *MsgHandler) Handler(msg *openwechat.Message) {
 
 	// 好友申请
 	if msg.IsFriendAdd() {
+		return
 		_, err := msg.Agree("你好我是基于chatGPT引擎开发的微信机器人，你可以向我提问任何问题。")
 		if err != nil {
 			glog.Errorf(ctx, "add friend agree error : %v", err)
@@ -185,7 +198,7 @@ func (h *MsgHandler) UserMsg(ctx context.Context, msg *openwechat.Message) error
 		glog.Error(ctx, err)
 		return err
 	}
-	glog.Debugf(ctx, "Received User[%v] %v Text Msg : %v", sender.Uin, sender.NickName, msg.Content)
+	glog.Debugf(ctx, "Received User%s[%s] %v \nText Msg : %v", sender, sender.ID(), sender.NickName, msg.Content)
 
 	if sender.NickName == "微信团队" {
 		glog.Debugf(ctx, "Received Uin %v", sender.Uin)
