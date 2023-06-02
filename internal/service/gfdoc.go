@@ -11,6 +11,7 @@ import (
 var basePath = "https://goframe.org"
 var apiPath = basePath + "/rest/api"
 var cAPI *goconfluence.API
+var qaPath = basePath + "/pages/viewpage.action?pageId=7296348"
 
 // NewSearchApi description
 //
@@ -48,7 +49,7 @@ func Search(ctx context.Context, key string) string {
 	})
 	if err != nil {
 		glog.Error(ctx, err)
-		return "搜索失败"
+		return "哎呀，出错啦~"
 	}
 	// g.Dump(res)
 	if len(res.Results) > 0 {
@@ -59,8 +60,9 @@ func Search(ctx context.Context, key string) string {
 			glog.Debug(ctx, v.Content.Title)
 			glog.Debug(ctx, basePath+v.Content.Links.WebUI)
 		}
+		resStr += "其它常见问题：\n" + qaPath
 	} else {
-		resStr = "没有搜索到结果"
+		resStr = "没有找到呢~换个关键字试试^_^\n也可以访问最新文档\n" + basePath
 	}
 
 	return resStr

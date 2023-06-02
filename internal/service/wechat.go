@@ -99,16 +99,28 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 				return
 			}
 			for _, v := range fs {
-				glog.Debug(ctx, v.ID(), v.NickName, v.UserName)
+				glog.Debug(ctx, v.ID(), v.NickName, v.RemarkName, v.UserName)
 			}
 			// glog.Debugf(ctx, "friends : %+v", fs)
 			// fs.GetByNickName("哆啦A梦").SendText("你好")
+			glog.Debugf(ctx, "-times : %d", times)
 			now := time.Now()
-			if now.Minute()%20 == 3 && now.Second() < 30 {
+			if times == 0 || now.Hour() == 0 {
+				times = now.Hour()
+			}
+			glog.Debugf(ctx, "--times : %d", times)
+			if now.Hour() == times {
 				glog.Debugf(ctx, "now : %+v", now)
 				// msg := now.Format("2006-01-02 15:04:05") + " " + grand.Letters(now.Second())
-				fs.GetByNickName("AA39萌小宝~网购查券助手").SendText(mymsg)
+				fs.GetByRemarkName("ping").SendText(mymsg)
+				times++
 			}
+			glog.Debugf(ctx, "---times : %d", times)
+			// if now.Minute()%20 == 3 && now.Second() < 30 {
+			// 	glog.Debugf(ctx, "now : %+v", now)
+			// 	// msg := now.Format("2006-01-02 15:04:05") + " " + grand.Letters(now.Second())
+			// 	fs.GetByNickName("AA39萌小宝~网购查券助手").SendText(mymsg)
+			// }
 
 		}
 
@@ -117,6 +129,8 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 	}
 
 }
+
+var times = 0
 
 // Handler 全局处理入口
 func (h *MsgHandler) Handler(msg *openwechat.Message) {
@@ -161,7 +175,7 @@ func (h *MsgHandler) GroupMsg(ctx context.Context, msg *openwechat.Message) erro
 
 	// 不是@的不处理
 	if !msg.IsAt() {
-		return nil
+		return ReadMsg(ctx, msg)
 	}
 
 	// 获取@我的用户
@@ -207,20 +221,30 @@ func (h *MsgHandler) UserMsg(ctx context.Context, msg *openwechat.Message) error
 
 	switch msg.MsgType {
 	case openwechat.MsgTypeText:
-		requestText := strings.TrimSpace(msg.Content)
-		requestText = strings.Trim(requestText, "\n")
-		if requestText != "" && strings.HasPrefix(requestText, "gf ") {
-			requestText = strings.TrimPrefix(requestText, "gf ")
-			reply := Search(ctx, requestText)
-			_, err = msg.ReplyText(reply)
-			if err != nil {
-				glog.Debugf(ctx, "response user error: %v \n", err)
-				return err
-			}
-		}
+		return ReadMsg(ctx, msg)
 	}
 
 	return err
+}
+
+// ReadMsg description
+//
+// createTime: 2023-06-02 22:11:33
+//
+// author: hailaz
+func ReadMsg(ctx context.Context, msg *openwechat.Message) error {
+	requestText := strings.TrimSpace(msg.Content)
+	requestText = strings.Trim(requestText, "\n")
+	if requestText != "" && strings.HasPrefix(requestText, "gf ") {
+		requestText = strings.TrimPrefix(requestText, "gf ")
+		reply := Search(ctx, requestText)
+		_, err := msg.ReplyText(reply)
+		if err != nil {
+			glog.Debugf(ctx, "response user error: %v \n", err)
+			return err
+		}
+	}
+	return nil
 }
 
 // QrCodeCallBack 登录扫码回调，
