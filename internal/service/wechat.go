@@ -105,7 +105,7 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 			// fs.GetByNickName("哆啦A梦").SendText("你好")
 			glog.Debugf(ctx, "-times : %d", times)
 			now := time.Now()
-			if times == 0 || now.Hour() == 0 {
+			if times == 0 || (times == 24 && now.Hour() == 0) {
 				times = now.Hour()
 			}
 			glog.Debugf(ctx, "--times : %d", times)
