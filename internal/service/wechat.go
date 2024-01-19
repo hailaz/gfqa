@@ -9,6 +9,7 @@ import (
 	"github.com/eatmoreapple/openwechat"
 	"github.com/gogf/gf/v2/os/gctx"
 	"github.com/gogf/gf/v2/os/glog"
+	"github.com/gogf/gf/v2/util/grand"
 	"github.com/skip2/go-qrcode"
 )
 
@@ -62,7 +63,52 @@ func RunWechat(ctx context.Context) {
 	bot.Block()
 }
 
-var mymsg = "https://item.m.jd.com/product/10026691993401.html?utm_user=plusmember&gx=RnAowmJYaTbZypgWrIMYHXCWUFQ&gxd=RnAokjVfPGHanZ8d_YByWrqF9uKt6mw&ad_od=share&utm_source=androidapp&utm_medium=appshare&utm_campaign=t_335139774&utm_term=CopyURL"
+var (
+	times = 0
+	msgs  = []string{"hi", "你好", "余额", "收入", "支出"}
+)
+
+// KeepAlive 保活
+//
+// createTime: 2024-01-19 20:27:38
+func (h *MsgHandler) KeepAlive(ctx context.Context) {
+	self, err := h.bot.GetCurrentUser()
+	if err != nil {
+		glog.Errorf(ctx, "get current user error : %v", err)
+		return
+	}
+	glog.Debugf(ctx, "self : %+v", *self.User)
+	mp, err := self.Mps(false)
+	if err != nil {
+		glog.Errorf(ctx, "get friends error : %v", err)
+		return
+	}
+
+	now := time.Now()
+	if times == 0 || (times == 24 && now.Hour() == 0) {
+		times = now.Hour()
+	}
+	glog.Debugf(ctx, "保活: %d", times)
+	if now.Hour() == times {
+		glog.Debugf(ctx, "now : %+v", now)
+		if chat := mp.GetByNickName("微信支付"); chat != nil {
+
+			chat.SendText(msgs[grand.N(0, len(msgs)-1)])
+		} else {
+			glog.Errorf(ctx, "注意，没有找到保活对象")
+			fs, err := self.Friends(true)
+			if err != nil {
+				glog.Errorf(ctx, "get friends error : %v", err)
+				return
+			}
+			// 实在不行就改一个好友备注为ping，然后发送
+			if chat := fs.GetByRemarkName("ping"); chat != nil {
+				chat.SendText("余额")
+			}
+		}
+		times++
+	}
+}
 
 // FuncName description
 //
@@ -74,63 +120,12 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 	glog.Debugf(ctx, "RetCode:%s  Selector:%s", resp.RetCode, resp.Selector)
 	if resp.Success() {
 		if resp.Selector == openwechat.SelectorNormal {
-			self, err := h.bot.GetCurrentUser()
-			if err != nil {
-				glog.Errorf(ctx, "get current user error : %v", err)
-				return
-			}
-			glog.Debugf(ctx, "self : %+v", *self.User)
-
-			mp, err := self.Mps(false)
-			if err != nil {
-				glog.Errorf(ctx, "get friends error : %v", err)
-				return
-			}
-			for _, v := range mp {
-				glog.Debug(ctx, v.ID(), v.NickName, v.UserName)
-				// v.SendText("你好")
-			}
-
-			// mp.GetByNickName("微信支付").SendText("你好")
-
-			fs, err := self.Friends(true)
-			if err != nil {
-				glog.Errorf(ctx, "get friends error : %v", err)
-				return
-			}
-			for _, v := range fs {
-				glog.Debug(ctx, v.ID(), v.NickName, v.RemarkName, v.UserName)
-			}
-			// glog.Debugf(ctx, "friends : %+v", fs)
-			// fs.GetByNickName("哆啦A梦").SendText("你好")
-			glog.Debugf(ctx, "-times : %d", times)
-			now := time.Now()
-			if times == 0 || (times == 24 && now.Hour() == 0) {
-				times = now.Hour()
-			}
-			glog.Debugf(ctx, "--times : %d", times)
-			if now.Hour() == times {
-				glog.Debugf(ctx, "now : %+v", now)
-				// msg := now.Format("2006-01-02 15:04:05") + " " + grand.Letters(now.Second())
-				fs.GetByRemarkName("ping").SendText(mymsg)
-				times++
-			}
-			glog.Debugf(ctx, "---times : %d", times)
-			// if now.Minute()%20 == 3 && now.Second() < 30 {
-			// 	glog.Debugf(ctx, "now : %+v", now)
-			// 	// msg := now.Format("2006-01-02 15:04:05") + " " + grand.Letters(now.Second())
-			// 	fs.GetByNickName("AA39萌小宝~网购查券助手").SendText(mymsg)
-			// }
-
+			h.KeepAlive(ctx)
 		}
-
 	} else {
 		glog.Debugf(ctx, "sync check error: %s", resp.Err())
 	}
-
 }
-
-var times = 0
 
 // Handler 全局处理入口
 func (h *MsgHandler) Handler(msg *openwechat.Message) {

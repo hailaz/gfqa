@@ -54,12 +54,13 @@ func boot(ctx context.Context) {
 	log.Println("hello")
 
 	// // email init
-	emailcode, err := g.Cfg().Get(ctx, "emailSetting")
+	emailSetting, err := g.Cfg().Get(ctx, "emailSetting")
 	if err == nil {
-		err = emailcode.Scan(&service.EmailDataSetting)
+		err = emailSetting.Scan(&service.EmailDataSetting)
 		if err != nil {
 			glog.Fatal(ctx, err)
 		}
+		glog.Debug(ctx, service.EmailDataSetting)
 	}
 
 	// gf doc init
@@ -67,11 +68,10 @@ func boot(ctx context.Context) {
 	if err != nil {
 		glog.Fatal(ctx, err)
 	}
-	glog.Debug(ctx, token.String())
-	if token.String() == "" {
-		glog.Fatal(ctx, "config.yaml doctoken is nil")
+	if token.String() != "" {
+		glog.Debug(ctx, token.String())
+		service.NewSearchApi(ctx, token.String())
 	}
-	service.NewSearchApi(ctx, token.String())
 
 	// wechat
 	go service.RunWechat(ctx)
