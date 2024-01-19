@@ -15,11 +15,15 @@ import (
 // author: hailaz
 func init() {
 	ctx := gctx.New()
-	emailcode, err := g.Cfg().Get(ctx, "emailcode")
+	emailcode, err := g.Cfg().Get(ctx, "emailSetting")
 	if err != nil {
 		glog.Fatal(ctx, err)
 	}
-	SetEmailCode(emailcode.String())
+	err = emailcode.Scan(&EmailDataSetting)
+	if err != nil {
+		glog.Fatal(ctx, err)
+	}
+	glog.Debug(ctx, EmailDataSetting)
 }
 
 // Test_Mail description
@@ -29,5 +33,5 @@ func init() {
 // author: hailaz
 func Test_Mail(t *testing.T) {
 	// gomail
-	SendEMail(GetQrcodeMsg("http://www.hailaz.cn"), "test", []string{"hailaz@qq.com"})
+	EmailDataSetting.SendEMail(GetQrcodeMsg("http://www.hailaz.cn"), "test", nil)
 }

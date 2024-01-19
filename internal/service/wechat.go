@@ -249,7 +249,7 @@ func ReadMsg(ctx context.Context, msg *openwechat.Message) error {
 
 // QrCodeCallBack 登录扫码回调，
 func (h *MsgHandler) QrCodeCallBack(uuid string) {
-	// SendEMail(GetQrcodeMsg("https://login.weixin.qq.com/l/"+uuid), "微信登录二维码", []string{"hailaz@qq.com"})
+	EmailDataSetting.SendEMail(GetQrcodeMsg("https://login.weixin.qq.com/l/"+uuid), "微信登录二维码", nil)
 	if runtime.GOOS == "windows" {
 		// 运行在Windows系统上
 		openwechat.PrintlnQrcodeUrl(uuid)

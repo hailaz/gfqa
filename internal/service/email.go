@@ -12,15 +12,46 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-var emailCode = ""
+// EmailData description
+type EmailData struct {
+	From     string   // 发送者
+	FromCode string   // 发送者密码
+	To       []string // 接收者
+	IsOpen   bool     // 是否开启
+}
 
-// SetEmailCode description
+var (
+	EmailDataSetting = &EmailData{}
+)
+
+// SetFromCode description
 //
 // createTime: 2022-12-21 20:55:56
 //
 // author: hailaz
-func SetEmailCode(code string) {
-	emailCode = code
+func (e *EmailData) SetFromCode(code string) {
+	e.FromCode = code
+}
+
+// SetEmailFrom description
+//
+// createTime: 2022-12-21 20:55:56
+//
+// author: hailaz
+func (e *EmailData) SetEmailFrom(from string) {
+	e.From = from
+}
+
+// SetEmailFrom description
+//
+// createTime: 2022-12-21 20:55:56
+//
+// author: hailaz
+func (e *EmailData) SetEmailTo(to string) {
+	if e.To == nil {
+		e.To = []string{}
+	}
+	e.To = append(e.To, to)
 }
 
 // SendEMail description
@@ -28,18 +59,29 @@ func SetEmailCode(code string) {
 // createTime: 2022-12-19 18:03:22
 //
 // author: hailaz
-func SendEMail(m *gomail.Message, subject string, to []string) {
+func (e *EmailData) SendEMail(m *gomail.Message, subject string, to []string) {
+	if !e.IsOpen {
+		return
+	}
 	if m == nil {
 		return
 	}
-	sender := "2464629800@qq.com"
+
+	if len(e.From) == 0 || len(e.FromCode) == 0 {
+		glog.Error(context.Background(), "emailAddress or emailCode is nil")
+		return
+	}
+
+	if len(to) == 0 {
+		to = e.To
+	}
 
 	// send email
-	m.SetHeader("From", sender)
+	m.SetHeader("From", e.From)
 	m.SetHeader("To", to...)
 	m.SetHeader("Subject", subject)
 
-	d := gomail.NewDialer("smtp.qq.com", 465, sender, emailCode)
+	d := gomail.NewDialer("smtp.qq.com", 465, e.From, e.FromCode)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	if err := d.DialAndSend(m); err != nil {
 		panic(err)

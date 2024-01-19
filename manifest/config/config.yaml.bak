@@ -10,3 +10,9 @@ logger:
   file: '{Y-m-d}.log'
 
 doctoken: ''
+
+emailSetting:
+  from: ''
+  fromCode: ''
+  to: ['123@qq.com']
+  isOpen: false
