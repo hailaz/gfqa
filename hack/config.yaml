@@ -3,6 +3,6 @@
 # https://goframe.org/pages/viewpage.action?pageId=3673173
 gfcli:
   build:
-    name:     "gfqa"
+    name:     "main"
     arch:     "arm,amd64"
     system:   "linux,windows"
