@@ -49,7 +49,7 @@ func RunWechat(ctx context.Context) {
 	bot.SyncCheckCallback = handler.SyncCheckCallback
 
 	// 创建热存储容器对象
-	reloadStorage := openwechat.NewFileHotReloadStorage("storage.json")
+	reloadStorage := openwechat.NewFileHotReloadStorage("./log/storage.json")
 
 	// 执行热登录
 	err := bot.HotLogin(reloadStorage)
