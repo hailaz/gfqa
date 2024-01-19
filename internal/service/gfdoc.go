@@ -50,6 +50,9 @@ func Search(ctx context.Context, key string) string {
 	glog.Debug(ctx, "search key: ", key)
 	resStr := ""
 	cql := fmt.Sprintf("siteSearch ~ '%s' AND space in ('%s')", key, "gf")
+	if cAPI == nil {
+		return "没有配置gf文档搜索api~"
+	}
 	res, err := cAPI.Search(goconfluence.SearchQuery{
 		CQL:   cql,
 		Limit: 3,
