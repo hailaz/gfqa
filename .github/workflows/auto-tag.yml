@@ -52,5 +52,5 @@ jobs:
           password: ${{ secrets.DOCKER_PWD }}
       - name: show files
         run: |
-          docker build -t ccr.ccs.tencentyun.com/hailaz/gfqa:${{ env.GITHUB_MY_TAG }} -f ./manifest/docker/Dockerfile .
-          docker push ccr.ccs.tencentyun.com/hailaz/gfqa:${{ env.GITHUB_MY_TAG }}
+          docker build -t ccr.ccs.tencentyun.com/hailaz/gfqa:latest -f ./manifest/docker/Dockerfile .
+          docker push ccr.ccs.tencentyun.com/hailaz/gfqa:latest
