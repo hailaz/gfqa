@@ -65,7 +65,7 @@ func RunWechat(ctx context.Context) {
 
 var (
 	times = 0
-	msgs  = []string{"hi", "你好", "余额", "收入", "支出"}
+	msgs  = []string{"hi", "你好", "余额", "收入", "支出", "账单", "贷款", "理财", "投资", "股票", "基金", "保险", "房产", "车辆", "信用卡", "借记卡", "贷记卡", "借款"}
 )
 
 // KeepAlive 保活
@@ -88,11 +88,10 @@ func (h *MsgHandler) KeepAlive(ctx context.Context) {
 	if times == 0 || (times == 24 && now.Hour() == 0) {
 		times = now.Hour()
 	}
-	glog.Debugf(ctx, "保活: %d", times)
 	if now.Hour() == times {
+		glog.Debugf(ctx, "今天保活第%d次", times)
 		glog.Debugf(ctx, "now : %+v", now)
 		if chat := mp.GetByNickName("微信支付"); chat != nil {
-
 			chat.SendText(msgs[grand.N(0, len(msgs)-1)])
 		} else {
 			glog.Errorf(ctx, "注意，没有找到保活对象")
