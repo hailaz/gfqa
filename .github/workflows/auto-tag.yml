@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'change.log'
-  schedule:
-    - cron: '0 15 */3 * *'
+  # schedule:
+  #   - cron: '0 15 */3 * *'
 env:
   TZ: "Asia/Shanghai"
 jobs:
