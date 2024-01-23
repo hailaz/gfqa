@@ -1,8 +1,8 @@
-
 # CLI tool, only in development environment.
 # https://goframe.org/pages/viewpage.action?pageId=3673173
 gfcli:
   build:
-    name:     "main"
-    arch:     "arm,amd64"
-    system:   "linux,windows"
+    path: 'temp'
+    name: 'main'
+    arch: 'arm,amd64'
+    system: 'linux,windows'

@@ -1,5 +1,5 @@
 # example 1: on push to master
-name: 下载文档并发布
+name: 自动tag
 on:
   push:
     paths:
