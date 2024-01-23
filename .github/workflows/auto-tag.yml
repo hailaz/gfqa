@@ -1,0 +1,81 @@
+# example 1: on push to master
+name: 下载文档并发布
+on:
+  push:
+    paths:
+      - 'change.log'
+  schedule:
+    - cron: '0 15 */3 * *'
+env:
+  TZ: "Asia/Shanghai"
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    # permissions:
+    #   contents: write
+    #   packages: write
+    steps:
+      - name: Checkout Github Code
+        uses: actions/checkout@v3
+      
+      - name: 生成环境变量
+        run: |
+          echo "GITHUB_MY_TAG=$(date +v%Y.%m.%d%H%M)" >> $GITHUB_ENV
+      - name: 输出生成环境变量
+        run: |
+          echo ${{ env }}
+      - name: Autotag
+        uses: cardinalby/git-tag-action@master
+        env:
+          TAG: ${{ env.GITHUB_MY_TAG }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         
+
+      # - name: Set Up Golang Environment
+      #   uses: actions/setup-go@v4
+      #   with:
+      #     go-version: 1.20.4
+
+      - name: Setup Golang 
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+          cache-dependency-path: '**/go.sum' 
+      - name: 准备环境
+        run: |
+          echo ${{ env.GITHUB_MY_TAG }}
+          go install github.com/gogf/gf/cmd/gf/v2@latest
+          gf build
+      - name: show files
+        run: |
+          ls -la
+          tree temp
+
+      # - name: Create Github Release
+      #   id: create_release
+      #   uses: softprops/action-gh-release@v0.1.15
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: "${{ env.GITHUB_MY_TAG }}"
+      #     name: "${{ env.GITHUB_MY_TAG }}"
+      #     draft: false
+      #     prerelease: false
+      #     files: |
+      #       dist/goframe-v1.14.pdf
+      #       dist/goframe-v1.15.pdf
+      #       dist/goframe-v1.16.pdf
+      #       dist/goframe-v2.0.pdf
+      #       dist/goframe-v2.1.pdf
+      #       dist/goframe-v2.2.pdf
+      #       dist/goframe-v2.3.pdf
+      #       dist/goframe-v2.4.pdf
+      #       dist/goframe-latest.pdf
+
+      # - name: Upload Release Asset
+      #   id: upload-release-asset
+      #   uses: alexellis/upload-assets@0.4.0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     asset_paths: '["dist/*"]'

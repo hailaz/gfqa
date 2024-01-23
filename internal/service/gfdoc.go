@@ -59,7 +59,7 @@ func Search(ctx context.Context, key string) string {
 	})
 	if err != nil {
 		glog.Error(ctx, err)
-		return "哎呀，出错啦~"
+		return "哎呀，出错啦~\n可访问离线文档：https://www.hailaz.cn/doc2pdf/"
 	}
 	// g.Dump(res)
 	if len(res.Results) > 0 {
