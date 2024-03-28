@@ -13,7 +13,7 @@ import (
 // createTime: 2022-12-21 21:00:55
 //
 // author: hailaz
-func init() {
+func init1() {
 	ctx := gctx.New()
 	emailcode, err := g.Cfg().Get(ctx, "emailSetting")
 	if err != nil {

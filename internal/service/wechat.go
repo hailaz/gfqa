@@ -119,7 +119,7 @@ func (h *MsgHandler) SyncCheckCallback(resp openwechat.SyncCheckResponse) {
 	glog.Debugf(ctx, "RetCode:%s  Selector:%s", resp.RetCode, resp.Selector)
 	if resp.Success() {
 		if resp.Selector == openwechat.SelectorNormal {
-			h.KeepAlive(ctx)
+			// h.KeepAlive(ctx)
 		}
 	} else {
 		glog.Debugf(ctx, "sync check error: %s", resp.Err())
@@ -165,7 +165,7 @@ func (h *MsgHandler) GroupMsg(ctx context.Context, msg *openwechat.Message) erro
 		return err
 	}
 	group := openwechat.Group{User: sender}
-	glog.Debugf(ctx, "Received Group %v Text Msg : %v", group.NickName, msg.Content)
+	glog.Debugf(ctx, "Received Group %v Text Msg : [%v]", group.NickName, msg.Content)
 
 	// 不是@的不处理
 	if !msg.IsAt() {
@@ -180,17 +180,35 @@ func (h *MsgHandler) GroupMsg(ctx context.Context, msg *openwechat.Message) erro
 	}
 	atText := "@" + groupSender.NickName + " \n"
 
-	requestText := strings.TrimSpace(msg.Content)
-	requestText = strings.Trim(requestText, "\n")
-	if requestText != "" {
-		reply := Search(gctx.New(), requestText)
-		replyText := atText + reply
-		_, err = msg.ReplyText(replyText)
-		if err != nil {
-			glog.Debugf(ctx, "response group error: %v \n", err)
-			return err
+	cutAt := strings.Join(strings.Split(msg.Content, " ")[1:], " ")
+
+	glog.Debugf(ctx, "cutAt:[%v]", cutAt)
+
+	if strings.HasPrefix(cutAt, "日历") {
+		// 日历侠
+		img := NewMyImage("src/null.png", "src/simsun.ttc")
+		glog.Debugf(ctx, "Received Text Msg [%v]", cutAt)
+		if agrs := strings.Split(cutAt, " "); len(agrs) > 1 {
+			img.Rili(GetTime(agrs[1]))
+		} else {
+			img.Rili(time.Now())
+		}
+		msg.ReplyImage(img.Reader())
+	} else {
+		return nil
+		requestText := strings.TrimSpace(msg.Content)
+		requestText = strings.Trim(requestText, "\n")
+		if requestText != "" {
+			reply := Search(gctx.New(), requestText)
+			replyText := atText + reply
+			_, err = msg.ReplyText(replyText)
+			if err != nil {
+				glog.Debugf(ctx, "response group error: %v \n", err)
+				return err
+			}
 		}
 	}
+
 	return err
 }
 
